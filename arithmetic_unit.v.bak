@@ -1,0 +1,99 @@
+module arithmetic_unit(
+    input wire [0:0] KEY,
+    input wire [5:0] SW,
+    output wire [6:0] HEX0,
+    output wire [6:0] HEX3,
+    output wire [6:0] HEX4,
+    output wire [6:0] HEX5,
+    output reg [2:0] LEDR
+);
+    reg [39:0] numbers;
+    reg [7:0] operators;
+    reg [2:0] counter;
+    reg [7:0] current_result;
+    reg [7:0] current_number;
+    reg [1:0] current_op;
+    wire [7:0] operation_result;
+    wire operation_sign;
+    wire div_by_zero;
+
+    // Arithmetic operations module
+    arithmetic_operations alu(
+        .a(current_result),
+        .b(current_number),
+        .op(current_op),
+        .result(operation_result),
+        .sign(operation_sign),
+        .div_by_zero(div_by_zero)
+    );
+
+    // Display modules
+    display_controller input_display(
+        .value({6'b0, SW[1:0]}),
+        .hex0(HEX0),
+        .hex1(),  // Not connected
+        .hex2()   // Not connected
+    );
+
+    display_controller result_display(
+        .value(operation_result),
+        .hex0(HEX3),
+        .hex1(HEX4),
+        .hex2(HEX5)
+    );
+
+    // Main sequential logic
+    always @(posedge KEY[0]) begin
+        if(counter == 0) begin
+            LEDR <= 0;
+            current_result <= 0;
+            counter <= 0;
+        end
+
+        // Store input number and operator
+        case(counter)
+            3'd0: numbers[7:0] <= SW[2] ? -SW[1:0] : SW[1:0];
+            3'd1: numbers[15:8] <= SW[2] ? -SW[1:0] : SW[1:0];
+            3'd2: numbers[23:16] <= SW[2] ? -SW[1:0] : SW[1:0];
+            3'd3: numbers[31:24] <= SW[2] ? -SW[1:0] : SW[1:0];
+            3'd4: numbers[39:32] <= SW[2] ? -SW[1:0] : SW[1:0];
+        endcase
+
+        if(counter < 4) begin
+            operators[counter*2 +: 2] <= SW[5:4];
+        end
+
+        // Update current number
+        current_number <= SW[1:0];
+
+        // Perform operation and show results
+        if(counter > 0) begin
+            current_op <= operators[(counter-1)*2 +: 2];
+            current_result <= operation_result;
+            
+            // Update flags
+            LEDR[1] <= operation_sign;
+            LEDR[2] <= (operation_result == 0);
+            LEDR[0] <= div_by_zero;
+        end else begin
+            current_result <= numbers[7:0];
+        end
+
+        // Increment counter
+        if(counter < 4) begin
+            counter <= counter + 1;
+        end
+    end
+
+    // Initial block
+    initial begin
+        counter = 0;
+        current_result = 0;
+        LEDR = 0;
+        numbers = 0;
+        operators = 0;
+        current_number = 0;
+        current_op = 0;
+    end
+
+endmodule

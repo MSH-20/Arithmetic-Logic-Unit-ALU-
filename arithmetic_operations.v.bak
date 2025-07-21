@@ -1,0 +1,56 @@
+module arithmetic_operations(
+    input [7:0] a,
+    input [7:0] b,
+    input [1:0] op,
+    output reg [7:0] result,
+    output reg sign,
+    output reg div_by_zero
+);
+    // Operation codes
+    localparam ADD = 2'b00;
+    localparam SUB = 2'b01;
+    localparam MUL = 2'b10;
+    localparam DIV = 2'b11;
+
+    reg [7:0] add_result;
+    reg [7:0] sub_result;
+    reg [7:0] mul_result;
+    reg [7:0] div_result;
+    reg sub_sign, mul_sign, div_sign;
+    
+    always @(*) begin
+        // Default values
+        div_by_zero = 0;
+        sign = 0;
+        
+        case(op)
+            ADD: begin
+                result = a + b;
+                sign = 0;
+            end
+            SUB: begin
+                if (a >= b) begin
+                    result = a - b;
+                    sign = 0;
+                end else begin
+                    result = b - a;
+                    sign = 1;
+                end
+            end
+            MUL: begin
+                result = a * b;
+                sign = 0;
+            end
+            DIV: begin
+                if (b == 0) begin
+                    result = 8'hFF;
+                    div_by_zero = 1;
+                    sign = 0;
+                end else begin
+                    result = a / b;
+                    sign = 0;
+                end
+            end
+        endcase
+    end
+endmodule
