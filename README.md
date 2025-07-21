@@ -82,15 +82,6 @@ The ALU is capable of working with signed 8-bit integers and converting the resu
 
 ---
 
-## 👨‍💻 Author
-
-- **Name:** Muhammad Khaled
-- **University:** Cairo University
-- **Department:** Computer Engineering
-- **Year:** Junior (2025)
-- **Interests:** RTL Design, Hardware Simulation, Embedded Systems, Creative Digital Circuits
-
----
 
 ## 📌 Summary
 
